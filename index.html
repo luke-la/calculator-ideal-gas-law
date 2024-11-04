@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="./assets/global.css" />
+  <link rel="icon" href="./assets/favicon.ico"/>
+  <title>Ideal Gas Law Calculator</title>
+</head>
+
+<body>
+  <img src="./assets/pvnrt.png" />
+  <div id="app">
+    <form @submit.prevent="handleSubmit">
+      <p class="emphasis">
+        Calculate For:
+        <select name="calculate-selector" v-model="unknown" @change="clearUnknownValue">
+          <option value="p">Pressure</option>
+          <option value="v">Volume</option>
+          <option value="n">Moles</option>
+          <option value="t">Temperature</option>
+        </select>
+      </p>
+      <p :class="{isUnknown: unknown == 'p'}">
+        Pressure:
+        <span v-if="unknown == 'p'">{{ result }}</span>
+        <input name="pressure" v-else v-model="pressure" type="number" min="0.01" :step="step" required />
+        atm
+      </p>
+      <p :class="{isUnknown: unknown == 'v'}">
+        Volume:
+        <span v-if="unknown == 'v'">{{ result }}</span>
+        <input name="volume" v-else v-model="volume" type="number" min="0.01" :step="step"  required />
+        L
+      </p>
+      <p :class="{isUnknown: unknown == 'n'}">
+        Moles:
+        <span v-if="unknown == 'n'">{{ result }}</span>
+        <input name="moles" v-else v-model="moles" type="number" min="0.01" :step="step"  required />
+        mol
+      </p>
+      <p :class="{isUnknown: unknown == 't'}">
+        Temperature:
+        <span v-if="unknown == 't'">{{ result }}</span>
+        <input name="temperature" v-else v-model="temperature" type="number" min="0.01" :step="step"  required />
+        K
+      </p>
+      <input type="submit" id="calculate" class="emphasis" value="Calculate" />
+    </form>
+  </div>
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          gasConstant: 0.0821, //L⋅atm/(mol⋅K)
+          pressure: null,
+          volume: null,
+          moles: null,
+          temperature: null,
+          unknown: 'p',
+          result: null,
+          step: 0.00001
+        }
+      },
+      computed: {
+        r() {
+          return this.gasConstant;
+        }
+      },
+      methods: {
+        idealGasLaw(p, v, n, t) {
+          // Check which variable is null and calculate it
+          let value = null;
+          if (p === null) value = (n * this.r * t) / v;
+          else if (v === null) value = (n * this.r * t) / p;
+          else if (n === null) value = (p * v) / (this.r * t);
+          else if (t === null) value = (p * v) / (n * this.r);
+          return value.toFixed(5);
+        },
+        clearUnknownValue() {
+          if (this.pressure === null) this.pressure = this.result;
+          else if (this.volume === null) this.volume = this.result;
+          else if (this.moles === null) this.moles = this.result;
+          else if (this.temperature === null) this.temperature = this.result;
+          this.result = null;
+          if (this.unknown == "p") this.pressure = null;
+          else if (this.unknown == "v") this.volume = null;
+          else if (this.unknown == "n") this.moles = null;
+          else if (this.unknown == "t") this.temperature = null;
+        },
+        handleSubmit() {
+          this.result = this.idealGasLaw(this.pressure, this.volume, this.moles, this.temperature);
+        }
+      }
+    })
+    app.mount('#app')
+  </script>
+</body>
+
+</html>
