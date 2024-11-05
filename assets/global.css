@@ -1,11 +1,17 @@
 body {
   font-size: 120%;
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  text-align: center;
+  margin: 0 0 10% 0;
+  margin-bottom: 10%;
 }
 #app {
   width: 80%;
-  margin: 40px auto;
-  text-align: center;
+  margin: 10px auto;
+}
+h1 {
+  margin: 0;
+  padding: 15px;
 }
 p {
   display: block;
@@ -17,6 +23,19 @@ img {
   display: block;
   width: 40%;
   margin: auto;
+}
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 15px;
+  background-color: royalblue;
+  color: lightgray;
+  text-align: center;
+}
+a {
+  color: white
 }
 
 select {
@@ -61,10 +80,12 @@ input:focus {
 .isUnknown {
   background-color: lightgray;
 }
-.emphasis
-{
+.emphasis {
   background-color: royalblue;
   color: white;
+}
+.footnote {
+  display: block;
 }
 
 /* remove arrows */
@@ -75,7 +96,7 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-@media only screen and (min-width: 1080px) {
+@media only screen and (min-width: 786px) {
   body {
     font-size: 100%;
   }
@@ -84,5 +105,11 @@ input::-webkit-inner-spin-button {
   }
   img {
     width: 300px;
-  };
+  }
+  .footnote {
+    display: inline;
+  }
+  .footnote:not(:last-child)::after {
+    content: " | ";
+  }
 }

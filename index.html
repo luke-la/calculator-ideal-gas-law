@@ -2,14 +2,19 @@
 <html>
 
 <head>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <link rel="stylesheet" href="./assets/global.css" />
   <link rel="icon" href="./assets/favicon.ico"/>
   <title>Ideal Gas Law Calculator</title>
 </head>
 
 <body>
+  <header>
+    <h1 class="emphasis">Ideal Gas Law Calculator</h1>
+  </header>
+
   <img src="./assets/pvnrt.png" />
+
   <div id="app">
     <form @submit.prevent="handleSubmit">
       <p class="emphasis">
@@ -47,7 +52,14 @@
       </p>
       <input type="submit" id="calculate" class="emphasis" value="Calculate" />
     </form>
+
+    <footer>
+      <span class="footnote">Made by Luke (luke-la)</span>
+      <span class="footnote"><a href="https://github.com/luke-la/calculator-ideal-gas-law">GitHub</a></span>
+      <span class="footnote">Code licensed under <a href="./LICENSE">MIT License</a></span>
+    </footer>
   </div>
+
   <script>
     const app = Vue.createApp({
       data() {
@@ -95,6 +107,7 @@
     })
     app.mount('#app')
   </script>
+
 </body>
 
 </html>
