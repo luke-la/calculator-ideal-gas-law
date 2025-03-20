@@ -4,50 +4,79 @@
 <head>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <link rel="stylesheet" href="./assets/global.css" />
-  <link rel="icon" href="./assets/favicon.ico"/>
+  <link rel="icon" href="./assets/favicon.ico" />
   <title>Ideal Gas Law Calculator</title>
 </head>
 
 <body>
-  <img src="./assets/pvnrt.png" />
+  <header>
+    <h1 class="emphasis">Ideal Gas Law Calculator</h1>
+  </header>
+
   <div id="app">
-    <form @submit.prevent="handleSubmit">
-      <p class="emphasis">
-        Calculate For:
-        <select name="calculate-selector" v-model="unknown" @change="clearUnknownValue">
-          <option value="p">Pressure</option>
-          <option value="v">Volume</option>
-          <option value="n">Moles</option>
-          <option value="t">Temperature</option>
-        </select>
-      </p>
-      <p :class="{isUnknown: unknown == 'p'}">
-        Pressure:
-        <span v-if="unknown == 'p'">{{ result }}</span>
-        <input name="pressure" v-else v-model="pressure" type="number" min="0.01" :step="step" required />
-        atm
-      </p>
-      <p :class="{isUnknown: unknown == 'v'}">
-        Volume:
-        <span v-if="unknown == 'v'">{{ result }}</span>
-        <input name="volume" v-else v-model="volume" type="number" min="0.01" :step="step"  required />
-        L
-      </p>
-      <p :class="{isUnknown: unknown == 'n'}">
-        Moles:
-        <span v-if="unknown == 'n'">{{ result }}</span>
-        <input name="moles" v-else v-model="moles" type="number" min="0.01" :step="step"  required />
-        mol
-      </p>
-      <p :class="{isUnknown: unknown == 't'}">
-        Temperature:
-        <span v-if="unknown == 't'">{{ result }}</span>
-        <input name="temperature" v-else v-model="temperature" type="number" min="0.01" :step="step"  required />
-        K
-      </p>
-      <input type="submit" id="calculate" class="emphasis" value="Calculate" />
-    </form>
+    <div class="emphasis">
+      <label for="calculate-selector">Calculate For: </label>
+      <select id="calculate-selector" v-model="unknown">
+        <option value='p'>Pressure</option>
+        <option value='v'>Volume</option>
+        <option value='n'>Moles</option>
+        <option value='t'>Temperature</option>
+      </select>
+    </div>
+
+    <div v-if="!findP">
+      <label for="pressure">Pressure:</label>
+      <br />
+      <input id="pressure" v-model="pressure" type="number" placeholder="1.21" min="step" :max="max" :step="step" required />
+      <label for="pressure">atm</label>
+    </div>
+
+    <div v-if="!findV">
+      <label for="volume">Volume:</label>
+      <br />
+      <input id="volume" v-model="volume" type="number" placeholder="21.4" min="step" :max="max" :step="step" required />
+      <label for="volume">L</label>
+    </div>
+
+    <div v-if="!findN">
+      <label for="moles">Moles:</label>
+      <br />
+      <input id="moles" v-model="moles" type="number" placeholder="1" min="step" :max="max" :step="step" required />
+      <label for="moles">mol</label>
+    </div>
+
+    <div v-if="!findT">
+      <label for="temperature">Temperature:</label>
+      <br />
+      <input id="temperature" v-model="temperature" type="number" placeholder="318" min="step" :max="max" :step="step" required />
+      <label for="temperature">K</label>
+    </div>
+
+    <div>
+      <button id="calculate" @click="calc()">Calculate</button>
+    </div>
+
+    <div id="results">
+      <div>
+        <span>{{ result }}</span>
+        <button id="show-more" v-if="resultValid" @click="showWork = !showWork">
+          <span>Show </span>
+          <span v-if="!showWork">More &bigtriangledown;</span>
+          <span v-else>Less &bigtriangleup;</span>
+        </button>
+      </div>
+      <div id="work" v-if="showWork && result != null">
+        <p v-for="step of equationSteps">{{ step }}</p>
+      </div>
+    </div>
   </div>
+
+  <footer>
+    <span class="footnote">Made by Luke (<a href="https://github.com/luke-la">luke-la</a>)</span>
+    <span class="footnote"><a href="https://github.com/luke-la/calculator-ideal-gas-law">GitHub</a></span>
+    <span class="footnote">Code licensed under <a href="./LICENSE">MIT License</a></span>
+  </footer>
+
   <script>
     const app = Vue.createApp({
       data() {
@@ -58,43 +87,96 @@
           moles: null,
           temperature: null,
           unknown: 'p',
-          result: null,
-          step: 0.00001
+          result: "Enter values above to calculate.",
+          resultValid: false,
+          fidelity: 5,
+          max: 10000,
+          showWork: false,
+          equationSteps: [],
         }
       },
       computed: {
         r() {
           return this.gasConstant;
+        },
+        findP() {
+          return this.unknown === 'p';
+        },
+        findV() {
+          return this.unknown === 'v';
+        },
+        findN() {
+          return this.unknown === 'n';
+        },
+        findT() {
+          return this.unknown === 't';
+        },
+        step() {
+          let zeros = "0."
+          for (let i = 1; i < this.fidelity; i++) zeros += "0";
+          return Number(zeros + "1");
         }
       },
       methods: {
-        idealGasLaw(p, v, n, t) {
-          // Check which variable is null and calculate it
-          let value = null;
-          if (p === null) value = (n * this.r * t) / v;
-          else if (v === null) value = (n * this.r * t) / p;
-          else if (n === null) value = (p * v) / (this.r * t);
-          else if (t === null) value = (p * v) / (n * this.r);
-          return value.toFixed(5);
+        calc() {
+          let value;
+          let unit;
+          if (this.findP) {
+            value = (this.moles * this.r * this.temperature) / this.volume;  
+            unit = " atm"
+          }
+          else if (this.findV) {
+            value = (this.moles * this.r * this.temperature) / this.pressure;
+            unit = " L"
+          }
+          else if (this.findN) {
+            value = (this.pressure * this.volume) / (this.r * this.temperature);
+            unit = " mol"
+          }
+          else if (this.findT) {
+            value = (this.pressure * this.volume) / (this.moles * this.r);
+            unit = " K"
+          }
+          if (!Number.isNaN(value) && Number.isFinite(value) && value > 0) {
+            this.result = value.toFixed(this.fidelity) + unit;
+            this.getEquationSteps();
+            this.resultValid = true;
+          } else {
+            this.result = "You are missing a variable.";
+            this.resultValid = false;
+          }
         },
-        clearUnknownValue() {
-          if (this.pressure === null) this.pressure = this.result;
-          else if (this.volume === null) this.volume = this.result;
-          else if (this.moles === null) this.moles = this.result;
-          else if (this.temperature === null) this.temperature = this.result;
-          this.result = null;
-          if (this.unknown == "p") this.pressure = null;
-          else if (this.unknown == "v") this.volume = null;
-          else if (this.unknown == "n") this.moles = null;
-          else if (this.unknown == "t") this.temperature = null;
-        },
-        handleSubmit() {
-          this.result = this.idealGasLaw(this.pressure, this.volume, this.moles, this.temperature);
+        getEquationSteps() {
+          steps = []
+          if (this.findP) {
+            steps.push("p = (" + this.moles + " * " + this.r + " * " + this.temperature + ") / " + this.volume);
+            steps.push("p = (" + this.moles * this.r + " * " + this.temperature + ") / " + this.volume);
+            steps.push("p = " + this.moles * this.r * this.temperature + " / " + this.volume);
+            steps.push("p = " + this.result);
+          }
+          else if (this.findV) {
+            steps.push("v = (" + this.moles + " * " + this.r + " * " + this.temperature + ") / " + this.pressure);
+            steps.push("v = (" + this.moles * this.r + " * " + this.temperature + ") / " + this.pressure);
+            steps.push("v = " + this.moles * this.r * this.temperature + " / " + this.pressure);
+            steps.push("v = " + this.result);
+          }
+          else if (this.findN) {
+            steps.push("n = (" + this.pressure + " * " + this.volume + ") / (" + this.r + " * " + this.temperature + ")");
+            steps.push("n = " + this.pressure * this.volume + " / " + this.r * this.temperature);
+            steps.push("n = " + this.result);
+          }
+          else if (this.findT) {
+            steps.push("t = (" + this.pressure + " * " + this.volume + ") / (" + this.moles + " * " + this.r + ")");
+            steps.push("t = " + this.pressure * this.volume + " / " + this.moles * this.r);
+            steps.push("t = " + this.result);
+          }
+          this.equationSteps = steps;
         }
       }
     })
     app.mount('#app')
   </script>
+
 </body>
 
 </html>
